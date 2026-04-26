@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PIM Quality Monitor — Market Coverage</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>/* ============================================================
+   PIM Quality Monitor — Core Stylesheet
+   Built for industrial B2B product data governance
+   Aesthetic: Bloomberg terminal meets manufacturing control panel
+   ============================================================ */
+
+:root {
+  --bg:          #0d0f14;
+  --surface:     #12151c;
+  --card:        #171b24;
+  --border:      #1f2535;
+  --border-hi:   #2a3347;
+  --amber:       #f59e0b;
+  --amber-dim:   #92600a;
+  --amber-bg:    rgba(245,158,11,0.08);
+  --green:       #10b981;
+  --green-dim:   #065f46;
+  --green-bg:    rgba(16,185,129,0.08);
+  --red:         #ef4444;
+  --red-dim:     #7f1d1d;
+  --red-bg:      rgba(239,68,68,0.08);
+  --blue:        #3b82f6;
+  --blue-bg:     rgba(59,130,246,0.08);
+  --text:        #e2e8f0;
+  --text-dim:    #94a3b8;
+  --text-faint:  #475569;
+  --mono:        'IBM Plex Mono', monospace;
+  --sans:        'IBM Plex Sans', sans-serif;
+  --sidebar-w:   224px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-weight: 300;
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  padding: 0;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.logo-mark {
+  background: var(--amber);
+  color: #000;
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 5px 7px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.logo-title {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.logo-sub {
+  display: block;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-faint);
+  letter-spacing: 0.05em;
+  margin-top: 1px;
+}
+
+.sidebar-section-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--text-faint);
+  padding: 14px 16px 6px;
+  text-transform: uppercase;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: var(--card);
+  color: var(--text);
+  border-left-color: var(--border-hi);
+}
+
+.nav-item.active {
+  background: var(--amber-bg);
+  color: var(--amber);
+  border-left-color: var(--amber);
+  font-weight: 500;
+}
+
+.nav-icon {
+  font-size: 13px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--red-bg);
+  color: var(--red);
+  border: 1px solid var(--red-dim);
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 99px;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.sys-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.sys-meta {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-faint);
+}
+
+/* ── MAIN CONTENT ─────────────────────────────────────── */
+.main-content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 0 0 40px;
+}
+
+/* ── TOPBAR ───────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.page-title {
+  font-family: 'Space Grotesk', var(--sans);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.page-sub {
+  display: block;
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+  font-family: var(--mono);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.time-filter {
+  display: flex;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tf-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tf-btn:hover { color: var(--text); background: var(--border); }
+.tf-btn.active { background: var(--amber-bg); color: var(--amber); }
+
+.last-updated {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+/* ── KPI ROW ──────────────────────────────────────────── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.kpi-card {
+  padding: 20px 24px;
+  border-right: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.kpi-card:last-child { border-right: none; }
+.kpi-card:hover { background: var(--surface); }
+
+.kpi-label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-family: 'Space Grotesk', var(--sans);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.kpi-value.amber { color: var(--amber); }
+.kpi-value.green { color: var(--green); }
+.kpi-value.red   { color: var(--red);   }
+
+.kpi-unit { font-size: 16px; font-weight: 400; }
+
+.kpi-trend {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-top: 6px;
+}
+.kpi-trend.up   { color: var(--green); }
+.kpi-trend.down { color: var(--red); }
+.kpi-trend.neutral { color: var(--text-dim); }
+
+/* ── DASHBOARD GRID ───────────────────────────────────── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin-top: 1px;
+}
+
+.panel {
+  background: var(--card);
+  padding: 20px 22px;
+}
+.panel.span-1 { grid-column: span 1; }
+.panel.span-2 { grid-column: span 2; }
+.panel.span-3 { grid-column: span 3; }
+.panel.span-4 { grid-column: span 4; }
+
+.panel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.panel-title {
+  font-family: 'Space Grotesk', var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.panel-meta {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-faint);
+}
+
+/* ── BAR CHART ────────────────────────────────────────── */
+.bar-chart { display: flex; flex-direction: column; gap: 8px; }
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 48px;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-track {
+  height: 14px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+  position: relative;
+}
+
+.bar-val {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+/* ── MARKET GRID ──────────────────────────────────────── */
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.market-cell {
+  padding: 10px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: transform 0.1s;
+  border: 1px solid transparent;
+}
+.market-cell:hover { transform: scale(1.04); border-color: var(--border-hi); }
+
+.market-flag { font-size: 18px; display: block; margin-bottom: 4px; text-align: center; }
+.market-name { font-family: var(--mono); font-size: 9px; color: var(--text-dim); display: block; text-align: center; }
+.market-score { font-family: var(--mono); font-size: 13px; font-weight: 600; display: block; text-align: center; margin-top: 2px; }
+
+/* ── DONUT ────────────────────────────────────────────── */
+.donut-wrap { display: flex; align-items: center; gap: 20px; }
+.donut-svg  { width: 130px; height: 130px; flex-shrink: 0; }
+
+.donut-legend { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.legend-item  { display: flex; align-items: center; gap: 8px; }
+.legend-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-text  { font-size: 11px; color: var(--text-dim); }
+.legend-val   { font-family: var(--mono); font-size: 11px; margin-left: auto; }
+
+/* ── ISSUE TABLE ──────────────────────────────────────── */
+.issue-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.issue-table th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.issue-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(31,37,53,0.5);
+  color: var(--text-dim);
+  vertical-align: middle;
+}
+
+.issue-table tr:hover td { background: var(--surface); }
+
+.issue-table .mono { font-family: var(--mono); font-size: 10px; }
+
+.priority-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.priority-pill.critical { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-dim); }
+.priority-pill.high     { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-dim); }
+.priority-pill.medium   { background: var(--blue-bg); color: var(--blue); border: 1px solid #1d3561; }
+
+/* ── TREND SVG ────────────────────────────────────────── */
+.trend-svg { width: 100%; height: 160px; }
+
+/* ── ATTRIBUTE LIST ───────────────────────────────────── */
+.attr-list { display: flex; flex-direction: column; gap: 10px; }
+
+.attr-item {
+  display: grid;
+  grid-template-columns: 1fr 60px 80px;
+  align-items: center;
+  gap: 10px;
+}
+
+.attr-name { font-size: 12px; color: var(--text-dim); }
+.attr-count { font-family: var(--mono); font-size: 11px; color: var(--text-faint); text-align: right; }
+.attr-bar-wrap { background: var(--border); height: 6px; border-radius: 2px; overflow: hidden; }
+.attr-bar-fill { height: 100%; background: var(--red); opacity: 0.7; border-radius: 2px; }
+
+/* ── COMPLETENESS PAGE ────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  outline: none;
+}
+.filter-select:focus { border-color: var(--amber); }
+
+.content-body { padding: 24px 28px; }
+
+.completeness-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.comp-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 16px;
+  border-radius: 3px;
+  transition: border-color 0.15s;
+}
+.comp-card:hover { border-color: var(--border-hi); }
+
+.comp-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.comp-category { font-size: 12px; font-weight: 500; color: var(--text); }
+.comp-market { font-family: var(--mono); font-size: 9px; color: var(--text-faint); margin-top: 2px; }
+.comp-score-big { font-family: 'Space Grotesk', var(--sans); font-size: 24px; font-weight: 700; }
+
+.comp-progress {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.comp-progress-fill { height: 100%; border-radius: 2px; }
+
+.comp-stats {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-faint);
+}
+
+/* ── MARKET PAGE ──────────────────────────────────────── */
+.market-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.market-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 18px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.market-card:hover { border-color: var(--amber); background: var(--surface); }
+
+.market-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.market-flag-lg { font-size: 28px; }
+.market-name-lg { font-size: 13px; font-weight: 600; color: var(--text); }
+.market-region  { font-family: var(--mono); font-size: 9px; color: var(--text-faint); margin-top: 2px; }
+.market-score-lg { font-family: 'Space Grotesk', var(--sans); font-size: 28px; font-weight: 700; margin-left: auto; }
+
+.market-mini-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.mini-stat-label { font-family: var(--mono); font-size: 8px; color: var(--text-faint); text-transform: uppercase; }
+.mini-stat-val   { font-family: var(--mono); font-size: 13px; font-weight: 500; margin-top: 2px; }
+
+/* ── ATTRIBUTE GOVERNANCE PAGE ───────────────────────── */
+.attr-governance-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.attr-governance-table th {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-faint);
+  text-align: left; padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky; top: 64px; z-index: 10;
+}
+.attr-governance-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(31,37,53,0.4);
+  color: var(--text-dim);
+  vertical-align: middle;
+}
+.attr-governance-table tr:hover td { background: rgba(23,27,36,0.8); }
+
+.type-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.type-badge.mandatory { background: var(--red-bg); color: var(--red); }
+.type-badge.optional  { background: var(--blue-bg); color: var(--blue); }
+.type-badge.regional  { background: var(--amber-bg); color: var(--amber); }
+
+.coverage-cell { display: flex; align-items: center; gap: 8px; }
+.coverage-bar  { flex: 1; height: 6px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.coverage-fill { height: 100%; border-radius: 2px; }
+.coverage-pct  { font-family: var(--mono); font-size: 10px; width: 32px; text-align: right; }
+
+/* ── ANOMALY PAGE ─────────────────────────────────────── */
+.anomaly-list { display: flex; flex-direction: column; gap: 10px; }
+
+.anomaly-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid;
+  padding: 14px 18px;
+  border-radius: 0 3px 3px 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  transition: background 0.15s;
+}
+.anomaly-card:hover { background: var(--surface); }
+.anomaly-card.critical { border-left-color: var(--red); }
+.anomaly-card.high     { border-left-color: var(--amber); }
+.anomaly-card.medium   { border-left-color: var(--blue); }
+
+.anomaly-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.anomaly-desc  { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+.anomaly-meta  { font-family: var(--mono); font-size: 9px; color: var(--text-faint); margin-top: 6px; }
+
+.anomaly-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.btn-sm {
+  background: var(--border);
+  border: 1px solid var(--border-hi);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-sm:hover { color: var(--amber); border-color: var(--amber-dim); background: var(--amber-bg); }
+
+/* ── ARCHITECTURE PAGE ────────────────────────────────── */
+.arch-container { padding: 28px; }
+.arch-svg { width: 100%; }
+
+.arch-description {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 24px;
+  border-radius: 3px;
+  margin-top: 24px;
+}
+
+.arch-description h3 {
+  font-family: 'Space Grotesk', var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.arch-description p {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+.arch-legend {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.legend-entry { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim); }
+.legend-box   { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── SCROLLBAR ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+
+/* ── RESPONSIVE ───────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .kpi-row { grid-template-columns: repeat(3,1fr); }
+  .dash-grid { grid-template-columns: 1fr 1fr; }
+  .panel.span-3 { grid-column: span 2; }
+}
+
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .main-content { margin-left: 0; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+  .dash-grid { grid-template-columns: 1fr; }
+  .panel { grid-column: span 1 !important; }
+}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.live-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;
+letter-spacing:0.1em;padding:3px 8px;border-radius:99px;background:rgba(16,185,129,0.1);
+color:var(--green);border:1px solid rgba(16,185,129,0.3);text-transform:uppercase;}
+.live-badge::before{content:"";width:5px;height:5px;border-radius:50%;
+background:var(--green);animation:blink 1.5s infinite;display:block;}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+<div class="sidebar-logo"><div class="logo-mark">PIM</div><div class="logo-text"><span class="logo-title">Quality Monitor</span><span class="logo-sub">v2.4.1 — Production</span></div></div>
+<div class="sidebar-section-label">CORE MODULES</div>
+<a href="index.html" class="nav-item"><span class="nav-icon">◈</span><span>Dashboard</span></a>
+<a href="completeness.html" class="nav-item"><span class="nav-icon">◫</span><span>Data Completeness</span></a>
+<a href="markets.html" class="nav-item active"><span class="nav-icon">◉</span><span>Market Coverage</span></a>
+<a href="attributes.html" class="nav-item"><span class="nav-icon">◧</span><span>Attribute Governance</span></a>
+<div class="sidebar-section-label">OPERATIONS</div>
+<a href="anomalies.html" class="nav-item"><span class="nav-icon">⚠</span><span>Anomaly Detection</span><span class="nav-badge">6</span></a>
+<a href="architecture.html" class="nav-item"><span class="nav-icon">⬡</span><span>System Architecture</span></a>
+<div class="sidebar-footer">
+<div class="sys-status"><span class="status-dot live"></span><span class="live-sync">Live — Last sync 0s ago</span></div>
+<div class="sys-meta">50 markets · 102,847 SKUs</div>
+</div></nav>
+<main class="main-content">
+<header class="topbar"><div class="topbar-left"><h1 class="page-title">Market Coverage</h1><span class="page-sub">PIM data quality and localisation status by region and market</span></div><div class="topbar-right"><span class="live-badge">Live</span><div class="last-updated">Updated: <strong class="live-clock">--</strong></div></div></header>
+<section class="kpi-row" style="grid-template-columns:repeat(4,1fr)">
+  <div class="kpi-card"><div class="kpi-label">Total Active Markets</div><div class="kpi-value">50</div><div class="kpi-trend up">▲ 3 markets added this quarter</div></div>
+  <div class="kpi-card"><div class="kpi-label">Markets ≥ 85% Quality</div><div class="kpi-value green">31</div><div class="kpi-trend up">▲ 4 from last quarter</div></div>
+  <div class="kpi-card"><div class="kpi-label">Markets 70–84%</div><div class="kpi-value amber">12</div><div class="kpi-trend neutral">→ Stable</div></div>
+  <div class="kpi-card"><div class="kpi-label">Markets Below 70%</div><div class="kpi-value red">7</div><div class="kpi-trend down">▼ 2 improvement target this month</div></div>
+</section>
+<div class="content-body"><div class="market-detail-grid" id="marketDetailGrid"></div></div>
+</main>
+<script>
+const PIM_DATA = {
+  categories: [
+    { name: "Cutting Tools",       score: 91, color: "#10b981", skus: 18420 },
+    { name: "Indexable Inserts",   score: 88, color: "#10b981", skus: 24310 },
+    { name: "Carbide Rods",        score: 85, color: "#10b981", skus: 9870  },
+    { name: "Wear Parts",          score: 82, color: "#f59e0b", skus: 11240 },
+    { name: "Milling Tools",       score: 79, color: "#f59e0b", skus: 8960  },
+    { name: "Drilling Solutions",  score: 76, color: "#f59e0b", skus: 7830  },
+    { name: "Threading Tools",     score: 72, color: "#f59e0b", skus: 6450  },
+    { name: "Tool Holders",        score: 68, color: "#ef4444", skus: 5210  },
+    { name: "PCD Tools",           score: 65, color: "#ef4444", skus: 4180  },
+    { name: "CBN Inserts",         score: 61, color: "#ef4444", skus: 3920  },
+    { name: "Special Tools",       score: 58, color: "#ef4444", skus: 2830  },
+    { name: "Legacy Components",   score: 44, color: "#ef4444", skus: 623   },
+  ],
+  markets: [
+    { name: "Germany",     flag: "🇩🇪", region: "DACH",    score: 94, status: "green", skus: 98200, gaps: 142  },
+    { name: "USA",         flag: "🇺🇸", region: "Americas",score: 91, status: "green", skus: 87400, gaps: 218  },
+    { name: "Japan",       flag: "🇯🇵", region: "APAC",    score: 89, status: "green", skus: 64100, gaps: 287  },
+    { name: "France",      flag: "🇫🇷", region: "Europe",  score: 86, status: "green", skus: 71300, gaps: 340  },
+    { name: "UK",          flag: "🇬🇧", region: "Europe",  score: 84, status: "amber", skus: 58900, gaps: 412  },
+    { name: "China",       flag: "🇨🇳", region: "APAC",    score: 79, status: "amber", skus: 43200, gaps: 680  },
+    { name: "Italy",       flag: "🇮🇹", region: "Europe",  score: 76, status: "amber", skus: 39800, gaps: 720  },
+    { name: "South Korea", flag: "🇰🇷", region: "APAC",    score: 74, status: "amber", skus: 28400, gaps: 840  },
+    { name: "Brazil",      flag: "🇧🇷", region: "Americas",score: 67, status: "red",   skus: 21300, gaps: 1120 },
+    { name: "India",       flag: "🇮🇳", region: "APAC",    score: 63, status: "red",   skus: 18700, gaps: 1380 },
+    { name: "Mexico",      flag: "🇲🇽", region: "Americas",score: 59, status: "red",   skus: 14200, gaps: 1640 },
+    { name: "Poland",      flag: "🇵🇱", region: "Europe",  score: 55, status: "red",   skus: 11800, gaps: 1847 },
+  ],
+  fieldTypes: [
+    { label: "Mandatory — Populated",  pct: 78, color: "#10b981" },
+    { label: "Optional — Populated",   pct: 14, color: "#3b82f6" },
+    { label: "Regional — Populated",   pct: 8,  color: "#f59e0b" },
+  ],
+  criticalIssues: [
+    { id: "QI-2847", category: "Legacy Components", market: "DE, FR, IT", skus: 623,  attr: "Technical Drawing",   priority: "critical", owner: "M. Fischer",  days: 34 },
+    { id: "QI-2831", category: "Tool Holders",      market: "APAC",       skus: 1840, attr: "Safety Datasheet",    priority: "critical", owner: "K. Tanaka",   days: 28 },
+    { id: "QI-2819", category: "CBN Inserts",       market: "US",         skus: 980,  attr: "REACH Compliance",    priority: "high",     owner: "J. Williams", days: 21 },
+    { id: "QI-2804", category: "Special Tools",     market: "BR, MX",     skus: 2830, attr: "Long Description",    priority: "high",     owner: "Unassigned",  days: 19 },
+    { id: "QI-2798", category: "PCD Tools",         market: "CN",         skus: 1240, attr: "Chinese Translation", priority: "high",     owner: "L. Chen",     days: 15 },
+    { id: "QI-2781", category: "Milling Tools",     market: "PL",         skus: 760,  attr: "Price List Ref",      priority: "high",     owner: "P. Kowalski", days: 12 },
+    { id: "QI-2770", category: "Threading Tools",   market: "IT",         skus: 430,  attr: "Catalogue Image",     priority: "high",     owner: "M. Rossi",    days: 9  },
+    { id: "QI-2765", category: "Drilling Solutions",market: "IN",         skus: 1830, attr: "Regional Packaging",  priority: "high",     owner: "Unassigned",  days: 7  },
+  ],
+  trendDays: [73.1,73.4,73.2,73.8,74.0,74.3,74.1,74.6,75.0,74.8,75.2,75.6,75.4,75.9,76.1,76.4,76.2,76.8,77.0,77.2,77.6,77.4,77.9,78.0,78.2,78.1,78.4,78.3,78.4,78.4],
+  topMissingAttributes: [
+    { name: "Technical Drawing (PDF)",   count: 8420, pct: 88 },
+    { name: "Long Description (EN)",     count: 6180, pct: 72 },
+    { name: "Regional Safety Sheet",     count: 5940, pct: 68 },
+    { name: "Chinese Translation",       count: 5210, pct: 62 },
+    { name: "REACH / RoHS Declaration", count: 4380, pct: 54 },
+    { name: "Catalogue Image (Hi-Res)", count: 3920, pct: 48 },
+    { name: "Price List Reference",      count: 3140, pct: 40 },
+    { name: "Packaging Dimensions",      count: 2870, pct: 35 },
+  ],
+  attributes: [
+    { name: "Product Short Name",       type: "mandatory", categories: 18, coverage: 98, missing: 210   },
+    { name: "EAN / GTIN Code",          type: "mandatory", categories: 18, coverage: 97, missing: 312   },
+    { name: "Material Grade",           type: "mandatory", categories: 14, coverage: 95, missing: 480   },
+    { name: "Primary Image",            type: "mandatory", categories: 18, coverage: 93, missing: 720   },
+    { name: "Short Description (EN)",   type: "mandatory", categories: 18, coverage: 91, missing: 940   },
+    { name: "Application Area",         type: "mandatory", categories: 12, coverage: 88, missing: 1240  },
+    { name: "Cutting Speed Range",      type: "mandatory", categories: 8,  coverage: 84, missing: 1640  },
+    { name: "Coating Type",             type: "mandatory", categories: 10, coverage: 82, missing: 1870  },
+    { name: "Long Description (EN)",    type: "mandatory", categories: 18, coverage: 78, missing: 2230  },
+    { name: "Technical Drawing",        type: "mandatory", categories: 16, coverage: 72, missing: 2880  },
+    { name: "Safety Datasheet",         type: "mandatory", categories: 18, coverage: 68, missing: 3290  },
+    { name: "REACH Compliance Flag",    type: "mandatory", categories: 18, coverage: 64, missing: 3710  },
+    { name: "3D Model (STEP)",          type: "optional",  categories: 8,  coverage: 58, missing: 4240  },
+    { name: "French Translation",       type: "regional",  categories: 18, coverage: 82, missing: 1860  },
+    { name: "German Translation",       type: "regional",  categories: 18, coverage: 91, missing: 940   },
+    { name: "Chinese Translation",      type: "regional",  categories: 14, coverage: 61, missing: 3980  },
+    { name: "Japanese Translation",     type: "regional",  categories: 14, coverage: 74, missing: 2680  },
+    { name: "Catalogue Hi-Res Image",   type: "optional",  categories: 18, coverage: 54, missing: 4720  },
+    { name: "Price List Reference",     type: "optional",  categories: 18, coverage: 48, missing: 5360  },
+    { name: "Packaging Dimensions",     type: "optional",  categories: 12, coverage: 43, missing: 5840  },
+  ],
+  anomalies: [
+    { id: "ANO-0041", severity: "critical", type: "Data Wipe",       title: "Bulk technical drawing field cleared — Legacy Components",           desc: "623 SKUs had technical_drawing attribute cleared during overnight ERP sync. Root cause: mapping conflict in batch job #ETL-8821. Drawings exist in DAM but link references are broken.",                                            meta: "Detected: 2h ago · Source: ETL monitor · Affected markets: DE, FR, IT, US" },
+    { id: "ANO-0040", severity: "critical", type: "Compliance Risk", title: "Safety datasheet missing for 1,840 Tool Holder SKUs in APAC",        desc: "APAC regulatory compliance requires safety datasheets for all cutting tool categories. 1,840 SKUs currently lack this field and are at risk of channel suppression if not resolved before next feed delivery (06:00 JST).",  meta: "Detected: 6h ago · Source: Compliance rule engine · Deadline: 6h" },
+    { id: "ANO-0039", severity: "high",     type: "Translation Gap", title: "Chinese translation coverage dropped 12pp after catalogue migration", desc: "Following the v2.3 catalogue migration, zh_CN locale completeness fell from 79% to 67% across 14 product families. Appears to be a locale mapping issue in the import template rather than missing content.",                meta: "Detected: 1d ago · Source: Daily completeness diff · Impact: CN webstore" },
+    { id: "ANO-0038", severity: "high",     type: "Duplicate IDs",   title: "147 duplicate EAN codes detected across Milling and Drilling families",desc: "Automated ID validation surfaced 147 EAN collisions between Milling Tools and Drilling Solutions families. Likely caused by a copy-paste error during the Q1 product upload. Requires manual deduplication before next distributor feed.", meta: "Detected: 2d ago · Source: ID validation job · Affected: DE, US, UK feeds" },
+    { id: "ANO-0036", severity: "medium",   type: "Price Mismatch",  title: "Price list reference missing for 2,830 Special Tools SKUs",          desc: "Special Tools category added in February has no price list reference populated. SKUs are visible on the internal portal but are suppressed from the B2B eCommerce checkout flow, preventing ordering.",                              meta: "Detected: 4d ago · Source: Channel readiness check · Affects: B2B portal" },
+    { id: "ANO-0035", severity: "medium",   type: "Image Quality",   title: "Hi-res image resolution below threshold for 340 new SKUs",           desc: "340 SKUs added in the March batch upload have primary images below the 2000px minimum required for print catalogue output. Images are present but at screen resolution only. Print team flagged this during catalogue prep.",              meta: "Detected: 3d ago · Source: Asset validation · Affects: Print catalogue Q2" },
+  ],
+};
+
+/*
+ * dashboard.js — Executive dashboard rendering
+ *
+ * Renders all dashboard visualisations from the PIM_DATA layer.
+ * No external charting library dependency — everything drawn with
+ * native SVG and DOM manipulation for zero-overhead load time.
+ * This matters when dashboards are loaded by regional data stewards
+ * on limited bandwidth connections.
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildCategoryChart();
+  buildMarketGrid();
+  buildDonut();
+  buildIssueTable();
+  buildTrendLine();
+  buildAttrList();
+  wireTimeFilters();
+});
+
+/* ── CATEGORY BAR CHART ──────────────────────────────── */
+function buildCategoryChart() {
+  const container = document.getElementById('categoryChart');
+  if (!container) return;
+
+  PIM_DATA.categories.forEach(cat => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+
+    const label = document.createElement('div');
+    label.className = 'bar-label';
+    label.textContent = cat.name;
+
+    const track = document.createElement('div');
+    track.className = 'bar-track';
+
+    const fill = document.createElement('div');
+    fill.className = 'bar-fill';
+    fill.style.cssText = `width: ${cat.score}%; background: ${cat.color};
+      box-shadow: 0 0 8px ${cat.color}44;`;
+
+    track.appendChild(fill);
+
+    const val = document.createElement('div');
+    val.className = 'bar-val';
+    val.textContent = `${cat.score}%`;
+    val.style.color = cat.color;
+
+    row.appendChild(label);
+    row.appendChild(track);
+    row.appendChild(val);
+    container.appendChild(row);
+  });
+}
+
+/* ── MARKET HEATMAP GRID ──────────────────────────────── */
+function buildMarketGrid() {
+  const container = document.getElementById('marketGrid');
+  if (!container) return;
+
+  const colors = {
+    green: { bg: 'rgba(16,185,129,0.12)', text: '#10b981' },
+    amber: { bg: 'rgba(245,158,11,0.12)', text: '#f59e0b' },
+    red:   { bg: 'rgba(239,68,68,0.12)',  text: '#ef4444'  },
+  };
+
+  PIM_DATA.markets.forEach(m => {
+    const c = colors[m.status];
+    const cell = document.createElement('div');
+    cell.className = 'market-cell';
+    cell.style.background = c.bg;
+    cell.title = `${m.name} — ${m.skus.toLocaleString()} SKUs — ${m.gaps} gaps`;
+    cell.innerHTML = `
+      <span class="market-flag">${m.flag}</span>
+      <span class="market-name">${m.name}</span>
+      <span class="market-score" style="color:${c.text}">${m.score}%</span>
+    `;
+    container.appendChild(cell);
+  });
+}
+
+/* ── DONUT CHART ──────────────────────────────────────── */
+function buildDonut() {
+  const svg    = document.getElementById('donutSvg');
+  const legend = document.getElementById('donutLegend');
+  if (!svg || !legend) return;
+
+  const cx = 100, cy = 100, r = 70, strokeW = 28;
+  const circumference = 2 * Math.PI * r;
+  let offset = 0;
+
+  // Background circle
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  bg.setAttribute('cx', cx); bg.setAttribute('cy', cy);
+  bg.setAttribute('r', r);
+  bg.setAttribute('fill', 'none');
+  bg.setAttribute('stroke', '#1f2535');
+  bg.setAttribute('stroke-width', strokeW);
+  svg.appendChild(bg);
+
+  PIM_DATA.fieldTypes.forEach(seg => {
+    const dash = (seg.pct / 100) * circumference;
+    const gap  = circumference - dash;
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', cx); circle.setAttribute('cy', cy);
+    circle.setAttribute('r', r);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', seg.color);
+    circle.setAttribute('stroke-width', strokeW - 2);
+    circle.setAttribute('stroke-dasharray', `${dash} ${gap}`);
+    circle.setAttribute('stroke-dashoffset', -offset);
+    circle.setAttribute('transform', `rotate(-90 ${cx} ${cy})`);
+    svg.appendChild(circle);
+
+    offset += dash;
+
+    // Legend
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `
+      <div class="legend-dot" style="background:${seg.color}"></div>
+      <span class="legend-text">${seg.label}</span>
+      <span class="legend-val" style="color:${seg.color}">${seg.pct}%</span>
+    `;
+    legend.appendChild(item);
+  });
+
+  // Centre label
+  const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  text.setAttribute('x', cx); text.setAttribute('y', cy + 6);
+  text.setAttribute('text-anchor', 'middle');
+  text.setAttribute('fill', '#e2e8f0');
+  text.setAttribute('font-size', '22');
+  text.setAttribute('font-family', 'Space Grotesk, sans-serif');
+  text.setAttribute('font-weight', '700');
+  text.textContent = '78%';
+  svg.appendChild(text);
+
+  const sub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  sub.setAttribute('x', cx); sub.setAttribute('y', cy + 20);
+  sub.setAttribute('text-anchor', 'middle');
+  sub.setAttribute('fill', '#475569');
+  sub.setAttribute('font-size', '9');
+  sub.setAttribute('font-family', 'IBM Plex Mono, monospace');
+  sub.textContent = 'QUALITY';
+  svg.appendChild(sub);
+}
+
+/* ── ISSUE TABLE ──────────────────────────────────────── */
+function buildIssueTable() {
+  const tbody = document.getElementById('issueTableBody');
+  if (!tbody) return;
+
+  PIM_DATA.criticalIssues.forEach(issue => {
+    const tr = document.createElement('tr');
+    const pClass = issue.priority === 'critical' ? 'critical' : 'high';
+    const daysColor = issue.days > 20 ? 'var(--red)' : issue.days > 10 ? 'var(--amber)' : 'var(--text-dim)';
+
+    tr.innerHTML = `
+      <td class="mono" style="color:var(--text-dim)">${issue.id}</td>
+      <td>${issue.category}</td>
+      <td><span style="font-family:var(--mono);font-size:10px">${issue.market}</span></td>
+      <td class="mono" style="text-align:right;padding-right:16px">${issue.skus.toLocaleString()}</td>
+      <td style="color:var(--text-faint);font-size:11px">${issue.attr}</td>
+      <td><span class="priority-pill ${pClass}">${issue.priority}</span></td>
+      <td style="font-size:11px">${issue.owner}</td>
+      <td class="mono" style="color:${daysColor};text-align:right">${issue.days}d</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ── TREND LINE SVG ───────────────────────────────────── */
+function buildTrendLine() {
+  const svg = document.getElementById('trendSvg');
+  if (!svg) return;
+
+  const vals   = PIM_DATA.trendDays;
+  const W = 600, H = 160;
+  const padL = 40, padR = 16, padT = 14, padB = 28;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  const minV = Math.min(...vals) - 2;
+  const maxV = Math.max(...vals) + 2;
+  const scaleX = i => padL + (i / (vals.length - 1)) * plotW;
+  const scaleY = v => padT + plotH - ((v - minV) / (maxV - minV)) * plotH;
+
+  // Grid lines
+  [72, 74, 76, 78, 80].forEach(v => {
+    const y = scaleY(v);
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', padL); line.setAttribute('x2', W - padR);
+    line.setAttribute('y1', y);    line.setAttribute('y2', y);
+    line.setAttribute('stroke', '#1f2535'); line.setAttribute('stroke-width', '0.5');
+    svg.appendChild(line);
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', padL - 4); label.setAttribute('y', y + 3);
+    label.setAttribute('text-anchor', 'end');
+    label.setAttribute('fill', '#475569'); label.setAttribute('font-size', '8');
+    label.setAttribute('font-family', 'IBM Plex Mono');
+    label.textContent = `${v}%`;
+    svg.appendChild(label);
+  });
+
+  // Area fill
+  const areaPoints = vals.map((v, i) => `${scaleX(i)},${scaleY(v)}`).join(' ');
+  const areaPath = `M${scaleX(0)},${scaleY(vals[0])} ` +
+    vals.slice(1).map((v, i) => `L${scaleX(i+1)},${scaleY(v)}`).join(' ') +
+    ` L${scaleX(vals.length-1)},${padT+plotH} L${scaleX(0)},${padT+plotH} Z`;
+
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+  grad.setAttribute('id', 'trendGrad'); grad.setAttribute('x1','0'); grad.setAttribute('y1','0');
+  grad.setAttribute('x2','0'); grad.setAttribute('y2','1');
+  grad.innerHTML = `
+    <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25"/>
+    <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+  `;
+  defs.appendChild(grad);
+  svg.insertBefore(defs, svg.firstChild);
+
+  const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  area.setAttribute('d', areaPath);
+  area.setAttribute('fill', 'url(#trendGrad)');
+  svg.appendChild(area);
+
+  // Line
+  const linePath = `M${scaleX(0)},${scaleY(vals[0])} ` +
+    vals.slice(1).map((v, i) => `L${scaleX(i+1)},${scaleY(v)}`).join(' ');
+  const lineEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  lineEl.setAttribute('d', linePath);
+  lineEl.setAttribute('fill', 'none');
+  lineEl.setAttribute('stroke', '#f59e0b');
+  lineEl.setAttribute('stroke-width', '1.5');
+  svg.appendChild(lineEl);
+
+  // End dot
+  const lastX = scaleX(vals.length - 1);
+  const lastY = scaleY(vals[vals.length - 1]);
+  const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  dot.setAttribute('cx', lastX); dot.setAttribute('cy', lastY);
+  dot.setAttribute('r', '4'); dot.setAttribute('fill', '#f59e0b');
+  svg.appendChild(dot);
+
+  // Current value label
+  const valLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  valLabel.setAttribute('x', lastX + 6); valLabel.setAttribute('y', lastY + 4);
+  valLabel.setAttribute('fill', '#f59e0b');
+  valLabel.setAttribute('font-size', '10');
+  valLabel.setAttribute('font-family', 'IBM Plex Mono');
+  valLabel.textContent = '78.4%';
+  svg.appendChild(valLabel);
+}
+
+/* ── MISSING ATTRIBUTE LIST ──────────────────────────── */
+function buildAttrList() {
+  const container = document.getElementById('attrList');
+  if (!container) return;
+
+  PIM_DATA.topMissingAttributes.forEach(attr => {
+    const item = document.createElement('div');
+    item.className = 'attr-item';
+    item.innerHTML = `
+      <div class="attr-name">${attr.name}</div>
+      <div class="attr-count">${attr.count.toLocaleString()} SKUs</div>
+      <div class="attr-bar-wrap">
+        <div class="attr-bar-fill" style="width:${attr.pct}%"></div>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+/* ── TIME FILTER BUTTONS ─────────────────────────────── */
+function wireTimeFilters() {
+  document.querySelectorAll('.tf-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // In production: refetch data for the selected period and re-render
+    });
+  });
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const grid = document.getElementById('marketDetailGrid');
+  const colors = { green:'var(--green)', amber:'var(--amber)', red:'var(--red)' };
+  const labels = { green:'On Track', amber:'Needs Attention', red:'Critical' };
+  const locales = {Germany:'de_DE',USA:'en_US',Japan:'ja_JP',France:'fr_FR',UK:'en_GB',China:'zh_CN',Italy:'it_IT','South Korea':'ko_KR',Brazil:'pt_BR',India:'en_IN',Mexico:'es_MX',Poland:'pl_PL'};
+  PIM_DATA.markets.forEach(m => {
+    const color = colors[m.status];
+    const translated = Math.min(99, m.score + 4);
+    const card = document.createElement('div');
+    card.className = 'market-card';
+    card.innerHTML = `<div class="market-card-top"><div class="market-flag-lg">${m.flag}</div><div><div class="market-name-lg">${m.name}</div><div class="market-region">${m.region} · ${locales[m.name]||'xx_XX'}</div></div><div class="market-score-lg live-market-score" style="color:${color}">${m.score}%</div></div><div style="margin-bottom:10px"><div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="width:${m.score}%;height:100%;background:${color};border-radius:2px"></div></div></div><div class="market-mini-stats"><div><div class="mini-stat-label">SKUs</div><div class="mini-stat-val" style="color:var(--text)">${(m.skus/1000).toFixed(0)}k</div></div><div><div class="mini-stat-label">Gaps</div><div class="mini-stat-val" style="color:${color}">${m.gaps}</div></div><div><div class="mini-stat-label">Translated</div><div class="mini-stat-val" style="color:var(--text-dim)">${translated}%</div></div></div><div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><span style="font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:99px;background:${color}22;color:${color};border:1px solid ${color}44">${labels[m.status]}</span></div>`;
+    grid.appendChild(card);
+  });
+});
+
+/* ============================================================
+   live.js — Simulated live data engine
+   Updates clock, sync timer, KPIs, and status indicators
+   Runs client-side — no server or API required
+   ============================================================ */
+
+const LiveEngine = (() => {
+
+  // ── BASE VALUES (reset on each page load) ──────────────────
+  const BASE = {
+    skus:         102847,
+    markets:      50,
+    qualityScore: 78.4,
+    criticalGaps: 1847,
+    translation:  91.2,
+    marketsBelow: 7,
+    resolved:     312,
+  };
+
+  // Small random drift — stays realistic, never goes wild
+  function drift(val, maxPct = 0.003) {
+    const delta = val * maxPct * (Math.random() - 0.5) * 2;
+    return delta;
+  }
+
+  // ── CLOCK ──────────────────────────────────────────────────
+  function startClock() {
+    function tick() {
+      const now = new Date();
+      const formatted = now.toLocaleString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      });
+      document.querySelectorAll('.live-clock').forEach(el => {
+        el.textContent = formatted;
+      });
+    }
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  // ── SYNC TIMER ─────────────────────────────────────────────
+  function startSyncTimer() {
+    // Start at 0 seconds ago and count up
+    let seconds = Math.floor(Math.random() * 45); // random start 0-45s ago
+
+    function updateSync() {
+      seconds++;
+      let label;
+      if (seconds < 60)        label = `${seconds}s ago`;
+      else if (seconds < 3600) label = `${Math.floor(seconds/60)}m ago`;
+      else                     label = `${Math.floor(seconds/3600)}h ago`;
+
+      document.querySelectorAll('.live-sync').forEach(el => {
+        el.textContent = `Live — Last sync ${label}`;
+      });
+
+      // Simulate a resync every 3-5 minutes
+      if (seconds > 180 + Math.floor(Math.random() * 120)) {
+        seconds = 0;
+        flashSync();
+      }
+    }
+
+    updateSync();
+    setInterval(updateSync, 1000);
+  }
+
+  function flashSync() {
+    document.querySelectorAll('.live-sync').forEach(el => {
+      el.style.color = 'var(--green)';
+      el.textContent = 'Syncing...';
+      setTimeout(() => {
+        el.style.color = '';
+      }, 1200);
+    });
+  }
+
+  // ── KPI FLUCTUATION ────────────────────────────────────────
+  let current = { ...BASE };
+
+  function updateKPIs() {
+    // Quality score drifts ±0.1pp at a time
+    current.qualityScore = Math.max(76, Math.min(81,
+      current.qualityScore + drift(current.qualityScore, 0.002)
+    ));
+    // Critical gaps slowly resolve
+    current.criticalGaps = Math.max(1700, Math.min(1900,
+      current.criticalGaps + drift(current.criticalGaps, 0.003)
+    ));
+    // Translation coverage drifts slightly
+    current.translation = Math.max(90, Math.min(92.5,
+      current.translation + drift(current.translation, 0.001)
+    ));
+
+    // Update quality score displays
+    document.querySelectorAll('.live-quality').forEach(el => {
+      el.textContent = current.qualityScore.toFixed(1) + '%';
+    });
+    // Update critical gaps
+    document.querySelectorAll('.live-critical').forEach(el => {
+      el.textContent = Math.round(current.criticalGaps).toLocaleString();
+    });
+    // Update translation
+    document.querySelectorAll('.live-translation').forEach(el => {
+      el.textContent = current.translation.toFixed(1) + '%';
+    });
+  }
+
+  // ── STATUS DOT PULSE ───────────────────────────────────────
+  function startStatusPulse() {
+    // Already handled by CSS animation — just ensure label is right
+    document.querySelectorAll('.status-dot.live').forEach(dot => {
+      dot.title = 'System online — data streaming';
+    });
+  }
+
+  // ── ACTIVITY FEED (dashboard only) ─────────────────────────
+  const ACTIVITY_EVENTS = [
+    'DE market sync completed — 0 new gaps',
+    'US feed validated — 98,420 SKUs checked',
+    'Translation job completed — FR locale +12 SKUs',
+    'Anomaly check passed — no new incidents',
+    'JP market sync completed — 3 attribute gaps flagged',
+    'Attribute validation job ran — 20 attributes checked',
+    'CN locale sync — 67 SKUs updated',
+    'Quality threshold check — 7 markets below 80%',
+    'PIM → eCommerce publish sync completed',
+    'Distributor feed validated — BMEcat format OK',
+    'Safety datasheet check — 1,840 SKUs flagged',
+    'ERP delta sync — 14 new SKUs ingested',
+  ];
+
+  let activityIndex = 0;
+
+  function startActivityFeed() {
+    const feed = document.getElementById('live-activity-feed');
+    if (!feed) return;
+
+    function addEvent() {
+      const item = document.createElement('div');
+      item.className = 'activity-item';
+      item.style.cssText = `
+        display:flex;align-items:center;gap:8px;
+        padding:5px 0;border-bottom:1px solid rgba(31,37,53,0.5);
+        animation:fadeIn 0.4s ease;
+        font-size:11px;color:var(--text-dim);
+      `;
+      const now = new Date();
+      const time = now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+      item.innerHTML = `
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text-faint);flex-shrink:0">${time}</span>
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
+        <span>${ACTIVITY_EVENTS[activityIndex % ACTIVITY_EVENTS.length]}</span>
+      `;
+      feed.insertBefore(item, feed.firstChild);
+      // Keep only last 6 items
+      while (feed.children.length > 6) feed.removeChild(feed.lastChild);
+      activityIndex++;
+    }
+
+    addEvent();
+    // New event every 8-14 seconds
+    function scheduleNext() {
+      const delay = 8000 + Math.random() * 6000;
+      setTimeout(() => { addEvent(); scheduleNext(); }, delay);
+    }
+    scheduleNext();
+  }
+
+  // ── MARKET SCORE MICRO-DRIFT ───────────────────────────────
+  function startMarketDrift() {
+    const marketScores = document.querySelectorAll('.live-market-score');
+    if (!marketScores.length) return;
+
+    setInterval(() => {
+      marketScores.forEach(el => {
+        const current = parseFloat(el.textContent);
+        if (isNaN(current)) return;
+        const newVal = Math.max(40, Math.min(99,
+          current + (Math.random() - 0.5) * 0.4
+        ));
+        el.textContent = newVal.toFixed(0) + '%';
+        el.style.transition = 'color 0.5s';
+      });
+    }, 15000);
+  }
+
+  // ── BOOT ───────────────────────────────────────────────────
+  function init() {
+    startClock();
+    startSyncTimer();
+    startStatusPulse();
+    startActivityFeed();
+    startMarketDrift();
+    // KPI updates every 20 seconds
+    setInterval(updateKPIs, 20000);
+    // Initial update after 3s
+    setTimeout(updateKPIs, 3000);
+  }
+
+  return { init };
+})();
+
+// Auto-start when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', LiveEngine.init);
+} else {
+  LiveEngine.init();
+}
+
+</script>
+</body>
+</html>
