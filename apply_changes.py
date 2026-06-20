@@ -1,4 +1,37 @@
-# PIM Quality Monitor
+#!/usr/bin/env python3
+"""
+PIM Quality Monitor — Repository Cleanup Script
+================================================
+
+Run this ONCE inside your pim-quality-monitor folder.
+
+What it does:
+  1. Replaces README.md with the new version
+  2. Applies UI label fixes to all six HTML files
+  3. Prints a summary of changes
+
+Usage:
+  cd pim-quality-monitor
+  python3 apply_changes.py
+
+Then commit and push:
+  git add -A
+  git commit -m "docs: rewrite README; chore: replace prototype labels"
+  git push
+
+Safe to run: only modifies specific known strings. Will not touch
+any data, layout, CSS, or JavaScript logic.
+"""
+
+import os
+import sys
+from pathlib import Path
+
+# ============================================================
+# THE NEW README CONTENT
+# ============================================================
+
+NEW_README = """# PIM Quality Monitor
 
 A browser-based dashboard for surfacing data quality patterns across multi-region B2B product catalogues. Built to demonstrate the measurement framework, data model, and UI structure I keep wishing existed alongside enterprise PIM systems.
 
@@ -155,3 +188,134 @@ If you work in this space and the framing here resonates (or doesn't), I'd genui
 ## License
 
 MIT — use, fork, adapt, and ship.
+"""
+
+# ============================================================
+# THE FIND/REPLACE OPERATIONS FOR HTML FILES
+# ============================================================
+# Each tuple: (description, find_string, replace_string)
+
+REPLACEMENTS = [
+    (
+        "Sidebar logo subtitle (v2.4.1 Production → v0.1 Prototype)",
+        '<span class="logo-sub">v2.4.1 — Production</span>',
+        '<span class="logo-sub">v0.1 — Prototype</span>',
+    ),
+    (
+        "Sidebar live sync status (Live → Demo data)",
+        '<span class="live-sync">Live — Last sync 0s ago</span>',
+        '<span class="live-sync">Demo data — synthetic catalogue</span>',
+    ),
+    (
+        "Sidebar footer market count (50 markets → 12 markets · 50 locales)",
+        '<div class="sys-meta">50 markets · 102,847 SKUs</div>',
+        '<div class="sys-meta">12 markets · 50 locales · 102,847 SKUs</div>',
+    ),
+    (
+        "Topbar Live badge → Demo badge",
+        '<span class="live-badge">Live</span>',
+        '<span class="live-badge">Demo</span>',
+    ),
+    (
+        "Dashboard panel Streaming badge → Demo Loop",
+        '<span class="live-badge" style="font-size:8px">Streaming</span>',
+        '<span class="live-badge" style="font-size:8px">Demo Loop</span>',
+    ),
+]
+
+HTML_FILES = [
+    "index.html",
+    "completeness.html",
+    "markets.html",
+    "attributes.html",
+    "anomalies.html",
+    "architecture.html",
+]
+
+
+# ============================================================
+# EXECUTION
+# ============================================================
+
+def main():
+    # Confirm we're in the right directory
+    cwd = Path.cwd()
+    print(f"Running in: {cwd}")
+    print()
+
+    # Check we're actually in the repo
+    if not (cwd / "index.html").exists():
+        print("ERROR: index.html not found in current directory.")
+        print("Make sure you're running this script from inside the")
+        print("pim-quality-monitor folder.")
+        sys.exit(1)
+
+    # ── 1. Replace README.md ──────────────────────────────
+    readme_path = cwd / "README.md"
+    print("─" * 60)
+    print("STEP 1: Writing new README.md")
+    print("─" * 60)
+    readme_path.write_text(NEW_README, encoding="utf-8")
+    print(f"  ✓ Wrote {len(NEW_README)} characters to README.md")
+    print()
+
+    # ── 2. Apply UI label fixes to HTML files ────────────
+    print("─" * 60)
+    print("STEP 2: Applying UI label fixes to HTML files")
+    print("─" * 60)
+
+    total_files_changed = 0
+    total_replacements = 0
+
+    for filename in HTML_FILES:
+        filepath = cwd / filename
+        if not filepath.exists():
+            print(f"  ⚠ Skipping {filename} (not found)")
+            continue
+
+        original = filepath.read_text(encoding="utf-8")
+        modified = original
+        file_changes = []
+
+        for description, find_str, replace_str in REPLACEMENTS:
+            if find_str in modified:
+                modified = modified.replace(find_str, replace_str)
+                file_changes.append(description)
+                total_replacements += 1
+
+        if file_changes:
+            filepath.write_text(modified, encoding="utf-8")
+            total_files_changed += 1
+            print(f"\n  ✓ {filename} — {len(file_changes)} change(s):")
+            for change in file_changes:
+                print(f"      • {change}")
+        else:
+            print(f"\n  · {filename} — no matches (already clean or different version)")
+
+    print()
+
+    # ── 3. Summary ─────────────────────────────────────────
+    print("─" * 60)
+    print("SUMMARY")
+    print("─" * 60)
+    print(f"  README.md           : replaced")
+    print(f"  HTML files changed  : {total_files_changed} of {len(HTML_FILES)}")
+    print(f"  Total replacements  : {total_replacements}")
+    print()
+    print("Next steps:")
+    print("  1. Review the changes:    git diff")
+    print("  2. Stage everything:      git add -A")
+    print("  3. Commit:                git commit -m \"docs: rewrite README; chore: replace prototype labels\"")
+    print("  4. Push:                  git push")
+    print()
+    print("Then enable GitHub Pages:")
+    print("  → Repo Settings → Pages → Source: main / root → Save")
+    print()
+    print("Then update the About description on GitHub to:")
+    print("  → B2B PIM Data Quality Intelligence Dashboard — 100k SKUs, 12 markets, 50 locales")
+    print()
+    print("Done.")
+
+
+if __name__ == "__main__":
+    main()
